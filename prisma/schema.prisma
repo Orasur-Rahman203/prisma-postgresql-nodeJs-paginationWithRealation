@@ -7,12 +7,32 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model test_db {
-    uid       Int   @id @default(autoincrement())
-    fullName  String?
-    email     String @unique
-    password  String?
-    createdAt DateTime @default(now())
+// model test_db {
+//     uid       Int      @id @default(autoincrement())
+//     fullName  String?
+//     email     String   @unique
+//     password  String?
+//     createdAt DateTime @default(now())
+// }
+
+// model user {
+//     id      Int     @id @default(autoincrement())
+//     name    String?
+//     email   String?
+//     address String?
+// }
+
+model Post {
+    id     Int    @id
+    title  String
+    userId Int
+    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id        Int    @id
+    name      String
+    post      Post[] //one to many
 }
 
 // model Post {

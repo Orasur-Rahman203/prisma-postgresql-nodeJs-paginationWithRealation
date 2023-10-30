@@ -1,8 +1,8 @@
-const express=require("express");
-const app=express();
-const port=3000;
+const express = require("express");
+const app = express();
+const port = 3000;
 const { PrismaClient } = require('@prisma/client');
-const prisma=new PrismaClient();
+const prisma = new PrismaClient();
 
 async function checkDBConnection() {
     try {
@@ -15,7 +15,7 @@ async function checkDBConnection() {
 
 checkDBConnection();
 app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }))
 
 app.get("/api/users", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -34,7 +34,7 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.post("/api/users", async (req, res) => {
-    const {fullName, email, password}=req.body
+    const { fullName, email, password } = req.body
     try {
         const data = await prisma.test_db.create({
             data: {
@@ -49,12 +49,24 @@ app.post("/api/users", async (req, res) => {
     }
 });
 
-app.patch("/api/users/:id", async(req, res)=>{
-    const uid=req.params.id;
-    const {fullName, password}=req.body;
+app.get("/api/users/:id", async (req, res) => {
+    const uid = req.params.id;
+    try {
+        const data = await prisma.test_db.findUnique({
+            where: { uid: parseInt(uid) },
+        });
+        res.json({ message: data });
+    } catch (error) {
+        res.status(500).json(error.meta.cause);
+    }
+});
+
+app.patch("/api/users/:id", async (req, res) => {
+    const uid = req.params.id;
+    const { fullName, password } = req.body;
     try {
         const data = await prisma.test_db.update({
-            where:{uid:parseInt(uid)},
+            where: { uid: parseInt(uid) },
             data: {
                 fullName,
                 password
@@ -66,20 +78,67 @@ app.patch("/api/users/:id", async(req, res)=>{
     }
 });
 
-app.delete("/api/users/:id", async(req, res)=>{
-    const uid=req.params.id;
+app.delete("/api/users/:id", async (req, res) => {
+    const uid = req.params.id;
     try {
         const data = await prisma.test_db.delete({
-            where:{
-                uid:parseInt(uid)
+            where: {
+                uid: parseInt(uid)
             }
         });
         res.json({ message: "User created successfully", data });
     } catch (error) {
-        res.status(500).json( error.meta.cause );
+        res.status(500).json(error.meta.cause);
     }
 })
 
-app.listen(port, ()=>{
+
+app.get("/test", async (req, res) => {
+
+    // await prisma.user.create({
+    //     data: {
+    //         id: 2,
+    //         name: "ladis"
+    //     }
+    // })
+
+    await prisma.post.create({
+        data: {
+            id: 3,
+            title: "1st post by ladis",
+            userId: 2
+        }
+    })
+
+    res.send("created")
+})
+
+app.get("/test2", async (req, res) => {
+
+    let data = await prisma.post.findFirst({
+        include: {
+            User: true
+        }
+    })
+
+    res.send(data)
+})
+
+app.get("/test3", async (req, res) => {
+
+    let data = await prisma.user.findUnique(
+        {
+            where: {
+                id: 1
+            },
+            include: {
+                post: true
+            }
+        })
+
+    res.send(data)
+})
+
+app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })
