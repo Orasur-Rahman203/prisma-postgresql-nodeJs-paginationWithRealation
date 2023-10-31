@@ -34,18 +34,33 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.post("/api/users", async (req, res) => {
-    const { fullName, email, password } = req.body
+    const { name, email, password } = req.body;
     try {
-        const data = await prisma.test_db.create({
+        const data = await prisma.user.create({
             data: {
-                fullName,
+                name,
                 email,
                 password,
             }
         });
-        res.json({ message: "User created successfully", data });
+        res.json({ message: "User created successfully" , data});
     } catch (error) {
-        res.status(500).json(error.meta.cause);
+        res.status(500).json(error);
+    }
+});
+
+app.post("/api/users/post", async (req, res) => {
+    const {userId,title } = req.body;
+    try {
+        const data = await prisma.post.create({
+        data: {
+            title,
+            userId
+        }
+        });
+        res.json({ message: "User created successfully" , data});
+    } catch (error) {
+        res.status(500).json("error", error);
     }
 });
 
@@ -62,13 +77,14 @@ app.get("/api/users/:id", async (req, res) => {
 });
 
 app.patch("/api/users/:id", async (req, res) => {
-    const uid = req.params.id;
-    const { fullName, password } = req.body;
+    const id = req.params.id;
+    const { name, password } = req.body;
+    console.log(id, name, password);
     try {
-        const data = await prisma.test_db.update({
-            where: { uid: parseInt(uid) },
+        const data = await prisma.user.update({
+            where: { id: parseInt(id) },
             data: {
-                fullName,
+                name,
                 password
             }
         });
@@ -95,29 +111,41 @@ app.delete("/api/users/:id", async (req, res) => {
 
 app.get("/test", async (req, res) => {
 
-    // await prisma.user.create({
-    //     data: {
-    //         id: 2,
-    //         name: "ladis"
-    //     }
-    // })
-
-    await prisma.post.create({
+    await prisma.user.create({
         data: {
-            id: 3,
-            title: "1st post by ladis",
-            userId: 2
+            id: 2,
+            name: "Hasan ali",
+            email:"hasanali@gmail.com",
+            password:"100200300"
         }
     })
+
+    // await prisma.post.create({
+    //     data: {
+    //         id: 3,
+    //         title: "1st post by ladis",
+    //         userId: 2
+    //     }
+    // })
 
     res.send("created")
 })
 
 app.get("/test2", async (req, res) => {
 
-    let data = await prisma.post.findFirst({
+    // let data = await prisma.post.findMany({
+    //     include: {
+    //         User: true
+    //     }
+    // })
+    let data = await prisma.user.findMany({
         include: {
-            User: true
+            post: true
+            // post:{
+            //     where:{
+            //         id: 2
+            //     }
+            // }
         }
     })
 
